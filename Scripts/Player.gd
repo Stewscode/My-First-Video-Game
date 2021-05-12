@@ -15,7 +15,8 @@ var interactDist : int = 70
 var gold : int = 0 
 var curLevel : int = 1
 var curXp : int = 0
-var xpToNextLevel : int = 100
+var xpToLevelUp : int = 100
+var onehundred : int = 100
 var xpToLevelIncreaseRate : float = 1.2 # the rate at which your xp bar grows upon reaching a higher level.
 
  
@@ -26,7 +27,8 @@ var facingDir = Vector2() # has to be initialised to a direction so that if the 
 onready var userInterface = get_node("/root/MainScene/CanvasLayer/UI") # references the ui in the canvas layer
 onready var rayCast = $RayCast2D # variable to reference the raycast node
 onready var animatedSprite = $AnimatedSprite # variable to reference the animated sprite node
-onready var ghost = get_node("res://Scenes/GhostEffect")
+onready var enemy = get_node("/root/MainScene/Enemy")
+onready var arrow = get_node("res://Scenes/Arrow.tscn")
 
 # attack animation handling global variables
 var attackAnimationFinished = true
@@ -53,28 +55,39 @@ var state = MOVE
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	userInterface.update_level(curLevel) # calles the function which updates the player's level with it's current level from the UI node
+	#calculate_xp_needed_to_level_up()
+	#userInterface.initialise()
+	userInterface.update_level(curLevel) # calls the function which updates the player's level with it's current level from the UI node
 	userInterface.update_health(curHp, maxHp)
-	userInterface.update_experience(curXp, xpToNextLevel)
+	userInterface.update_experience(curXp, xpToLevelUp)
 	userInterface.update_gold(gold)
+	
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process (delta):
+
 	# checks the "state" variable and sees whether it is currently equal to MOVE, ATTACK or DODGE.
 	# It then goes to whichever "state" it matches and carries out the code in there. 
 	match state: # similar to switch statements
 		MOVE:
+			#print("state = MOVE")
 			move()
 		
 		ATTACK:
+			#print("state = ATTACK")
 			attack()
 			
 		DODGE:
+			#print("state = DODGE")
 			dodge()
 		
 		BLOCK: # not yet implemented
 			pass
+
+
+func knockback_enemies():
+	pass
 
 
 func dodge():
@@ -84,6 +97,7 @@ func dodge():
 	
 	dodgeVelocity = (facingDir * dodgeSpeed)
 	move_and_slide(dodgeVelocity)
+	knockback_enemies()
 	manage_dodge_animations()
 	
 
@@ -116,7 +130,6 @@ func dodge_finished():
 
 # function which manages the player when doing anything to do with attacking
 func attack():
-	print("Attacks")
 	rayCast.cast_to = facingDir * interactDist # Sets the ray's destination point
 	
 	if rayCast.is_colliding(): # if raycast is colliding with something
@@ -221,7 +234,7 @@ func interact ():
 
 # function to allow the player to take damage
 # pass in amount of damage to take
-func take_damage (dmgToTake):
+func take_damage(dmgToTake):
 	curHp -= dmgToTake # will take away damage from the current hp pool
 	userInterface.update_health(curHp, maxHp) # call the updateHealthBar function every time player takes damage to show changes
 
@@ -234,24 +247,51 @@ func die ():
 	get_tree().reload_current_scene() # reloads the current scene to the beggining if we die.
 
 
+func calculate_xp_needed_to_level_up():
+	if curLevel > 1:
+		xpToLevelUp = 100 * (xpToLevelIncreaseRate * (curLevel - 1))
+	else:
+		xpToLevelUp = 100
+
+
 # funtion to give XP to the player so that they can eventually level up
 # pass in amount of xp to give
 func give_xp (amount):
 	curXp += amount # adds "amount" to the current xp pool.
-	userInterface.update_experience(curXp, xpToNextLevel) # update experience bar
- 
-	if curXp >= xpToNextLevel: # checks if the current xp pool is greater or equal to the amount needed to level up.
+	userInterface.update_experience(curXp, xpToLevelUp) # update experience bar
+	print("current xp = ", curXp)
+	print("xp to next level: ", xpToLevelUp)
+	
+	if curXp >= xpToLevelUp: # checks if the current xp pool is greater or equal to the amount needed to level up.
 		level_up() # if current xp is enough to level up then go to level_up().
+		userInterface.update_experience(curXp, xpToLevelUp) # update experience bar
+		
 
 # function to handle leveling once the current xp has met the conditions to level up
 func level_up ():
-	var overflowXp = curXp - xpToNextLevel # variable to store the xp which has overflowed
- 
-	xpToNextLevel *= xpToLevelIncreaseRate # multiplies the xp required for the next level by a fixed rate
-	curXp = overflowXp # sets currrent xp to the amount overflowed (if any).
-	curLevel += 1 # adds 1 to the current level to show progress, eg level 1 then 2 then 3 etc.
-	userInterface.update_level(curLevel) # update player level 
 	
+	var overflowXp = curXp - xpToLevelUp # variable to store the xp which has overflowed
+	
+	xpToLevelUp *= xpToLevelIncreaseRate
+	curXp = overflowXp
+	curLevel += 1 # adds 1 to the current level to show progress, eg level 1 then 2 then 3 etc.
+#	if overflowXp > 0: 
+#		curXp = 0
+#		curXp += overflowXp
+#		overflowXp = 0
+#		xpToLevelUp *= xpToLevelIncreaseRate # multiplies the xp required for the next level by a fixed rate
+#		userInterface.update_experience(curXp, xpToLevelUp) # update experience bar
+#		print("xp to next level: ", xpToLevelUp)
+#	else:
+#		curXp = 0 + overflowXp # sets currrent xp to the amount overflowed (if any).
+#		overflowXp = 0
+#		xpToLevelUp *= xpToLevelIncreaseRate # multiplies the xp required for the next level by a fixed rate
+#		userInterface.update_experience(curXp, xpToLevelUp) # update experience bar
+#		print("xp to next level: ", xpToLevelUp)
+	
+	print("current level = ", curLevel)
+	
+	userInterface.update_level(curLevel) # update player level 
 
 
 # function to give gold to player
@@ -305,14 +345,9 @@ func _on_AnimatedSprite_animation_finished():
 		if curAttackAnimation == "AttackUp":
 			play_animation("IdleUp")
 			attack_finished() # call this function
-			
-#		if curAttackAnimation == "AtackRight" && $AnimatedSprite.flip_h == true:
-#			print("attack left finished")
-#			play_animation("IdleLeft")
-#			attack_finished() # call this function
-			
+		
+		# I am using attack right and idle right animations for the left attacks but flipping horizontal. So, this bit of code works for both to reset the animation to idle.
 		if curAttackAnimation == "AttackRight":
-			print("attack right finished")
 			play_animation("IdleRight")
 			attack_finished() # call this function
 			
@@ -331,18 +366,27 @@ func _on_AnimatedSprite_animation_finished():
 			dodge_finished() # call this function
 
 
-func _on_GhostEffectTimer_timeout():
+# function which does nothing but is used to identify this is the player when using .has_method("this_is_a_player")
+func this_is_the_player():
+	pass
 
+
+func _on_FadingTrailEffectTimer_timeout():
 	if state == DODGE:
-#		# copy of ghost object
-		var ghost = preload("res://Scenes/FadingTrailEffect.tscn").instance()
+		# copy of TrailEffect object
+		var TrailEffect = preload("res://Scenes/FadingTrailEffect.tscn").instance()
 		# add a child to the main game
-		get_parent().add_child(ghost)
-		ghost.position = position
-		# the texture of the ghost is equal to the player's animated sprite. Get the animations from the player,
+		get_parent().add_child(TrailEffect)
+		TrailEffect.position = position
+		# the texture of the TrailEffect is equal to the player's animated sprite. Get the animations from the player,
 		# and get the frames from it too. Tell it that the frames come from the current animation from the current frame.
-		ghost.scale.x = 4
-		ghost.scale.y = 4
-		ghost.texture = $AnimatedSprite.frames.get_frame($AnimatedSprite.animation, $AnimatedSprite.frame)
+		TrailEffect.scale.x = 4
+		TrailEffect.scale.y = 4
+		TrailEffect.texture = $AnimatedSprite.frames.get_frame($AnimatedSprite.animation, $AnimatedSprite.frame)
 		# make sure the orientation stays the same
-		ghost.flip_h = $AnimatedSprite.flip_h
+		TrailEffect.flip_h = $AnimatedSprite.flip_h
+
+
+func _on_Hitbox_body_entered(body):
+	if body.has_method("this_is_an_arrow"):
+		print("player hit by an arrow")

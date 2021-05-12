@@ -16,16 +16,69 @@ var chaseDist : int = 400
 var moveDirection = 110
 var movingVel = Vector2()
 var facingDir = Vector2()
+
+var curAttackAnimation
  
 onready var timer = $Timer
 onready var target = get_node("/root/MainScene/Player")
 onready var animatedSprite = $AnimatedSprite
+
+var state = MOVE
+enum {
+	MOVE,
+	ATTACK,
+	BLOCK
+}
+
+
+func _physics_process (delta):
+		# checks the "state" variable and sees whether it is currently equal to MOVE, ATTACK or DODGE.
+	# It then goes to whichever "state" it matches and carries out the code in there. 
+	match state: # similar to switch statements
+		MOVE:
+			move()
+		
+		ATTACK:
+			attack()
+		
+		BLOCK: # not yet implemented
+			pass
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	timer.wait_time = attackRate # set timer time to same as attack rate of the enemy
+	timer.start() # start the timer
 
 
 # take an animation and play that animation.
 func play_animation (anim_name):
 	if animatedSprite.animation != anim_name: # if the same animation is not currently playing
 		animatedSprite.play(anim_name) # plays animation
+
+
+# function to manage the seperate attack animations
+func manage_attack_animations():
+
+		if facingDir.x == 1:
+			curAttackAnimation = "AttackRight" # set's current animation to the appropriate animation
+			play_animation(curAttackAnimation) # plays said animation
+	
+		if facingDir.x == -1:
+			curAttackAnimation = "AttackLeft"
+			play_animation(curAttackAnimation)
+	
+		if facingDir.y == -1:
+			curAttackAnimation = "AttackUp"
+			play_animation(curAttackAnimation)
+
+		if facingDir.y == 1:
+			curAttackAnimation = "AttackDown"
+			play_animation(curAttackAnimation)
+				
+		if !facingDir.x == 1 && !facingDir.x == -1 && !facingDir.y == 1 && !facingDir.y == -1:
+			curAttackAnimation = "AttackDown"
+			play_animation(curAttackAnimation)
 
 
 # function which checks the current velocity and plays an animation depending on that.
@@ -48,11 +101,26 @@ func manage_animations ():
 		play_animation("IdleUp")
 	elif facingDir.y == 1:
 		play_animation("IdleDown")
+	elif movingVel.x == 0:
+		manage_idle_animations()
+		
+# function to switch to different idle animations
+func manage_idle_animations():
+	if facingDir.x == 1:
+		play_animation("IdleRight")
+	elif facingDir.x == -1:
+		play_animation("IdleLeft")
+	elif facingDir.y == -1:
+		play_animation("IdleUp")
+	elif facingDir.y == 1:
+		play_animation("IdleDown")
+		
 
 
 # function which allows an enemy to take damage
 # pass in amount of damage to be taken
 func take_damage (dmgToTake): 
+	print("'Enemy' takes ", dmgToTake, " damage")
 	curHp -= dmgToTake # takes away damage taken from hp pool
 	if curHp <= 0: # if the enemy's hp drops to 0 then it will "die".
 		die() # call die() function
@@ -63,16 +131,13 @@ func die ():
 	queue_free() # deletes the node - making it disappear and essentially die.
 
 
-func _physics_process (delta):
+func move():
 	movingVel = Vector2()
 	var distanceToTarget = position.distance_to(target.position)
-	
 	
 	if distanceToTarget > attackDist and distanceToTarget < chaseDist:
 		var vel = (target.position - position).normalized()
 		move_and_slide(vel * moveSpeed) # let enemy move
-	
-	
 	
 	var player = target.position # gets the player's position as a vector
 	moveDirection = rad2deg(get_angle_to(player)) # gets the angle from this current node to the player node in radians and convert it to degrees (godot work in 0 to 180 and 0 to -180, instead of 0 to 360, weird).
@@ -90,19 +155,31 @@ func _physics_process (delta):
 	if moveDirection > -45 and moveDirection < 45:
 		movingVel.x = 1
 		facingDir = Vector2(1, 0)
-	if distanceToTarget > chaseDist: # if target is out of enemy's chase radius then stop playing the running animations by setting its moving velocity to 0 and leave the facing direction the same to make them face the direcion they were last facing.
-		movingVel.x = 0
-		movingVel.y = 0
-		
+	# if target is out of enemy's chase radius then stop	
+	if distanceToTarget > chaseDist:
+		stop_moving()
+	
+	
+	
+	if position.distance_to(target.position) <= attackDist: # if the target is within the attack range :
+		state = ATTACK
+		stop_moving()
+		attack()
+	
 	manage_animations()
 
+func stop_moving():
+	movingVel.x = 0
+	movingVel.y = 0
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	timer.wait_time = attackRate # set timer time to same as attack rate of the enemy
-	timer.start() # start the timer
-
+func attack():
+	if position.distance_to(target.position) <= attackDist: # if the target is within the attack range :
+		state = ATTACK
+	else:
+		state = MOVE
 
 func _on_Timer_timeout():
-	if position.distance_to(target.position) <= attackDist: # if the target is within the attack range, deal damage.
-		target.take_damage(damage) # take away hp from the "target", eg player.
+	if state == ATTACK:
+		if position.distance_to(target.position) <= attackDist: # if the target is within the attack range, deal damage.
+			target.take_damage(damage) # take away hp from the "target", eg player.
+			manage_attack_animations()
