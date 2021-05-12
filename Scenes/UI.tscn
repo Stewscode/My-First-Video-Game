@@ -55,7 +55,7 @@ margin_left = 5.97339
 margin_top = 42.7364
 margin_right = 253.973
 margin_bottom = 53.7364
-value = 20.0
+max_value = 0.0
 texture_under = ExtResource( 1 )
 texture_progress = ExtResource( 1 )
 tint_under = Color( 0.898039, 0.164706, 0.164706, 0 )
@@ -70,7 +70,6 @@ margin_left = 5.97339
 margin_top = 58.4034
 margin_right = 253.973
 margin_bottom = 69.4034
-max_value = 100.0
 value = 100.0
 texture_under = ExtResource( 1 )
 texture_progress = ExtResource( 1 )
@@ -101,6 +100,18 @@ margin_top = 76.5892
 margin_right = 59.9734
 margin_bottom = 90.5892
 text = "Gold: 13"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ExpBar" type="ProgressBar" parent="Background"]
+modulate = Color( 0, 0.952941, 1, 1 )
+margin_left = 6.1403
+margin_top = 40.9822
+margin_right = 254.14
+margin_bottom = 54.9822
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_shadow = Color( 1, 0.980392, 0.980392, 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }

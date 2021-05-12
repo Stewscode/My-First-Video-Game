@@ -9,11 +9,18 @@ onready var experienceBar : TextureProgress = get_node("Background/ExperienceBar
 onready var staminaBar : TextureProgress = get_node("Background/StaminaBar")
 onready var playerGoldLabel : Label = get_node("Background/PlayerGoldLabel")
 onready var playerLevelLabel : Label = get_node("Background/PlayerLevelLabel")
+onready var ExpBar : ProgressBar = get_node("Background/ExpBar")
 
-
+func intitialise(): 
+	playerLevelLabel.text = ""
+	
 # updates the level text Label node
-func update_level (level):
-	playerLevelLabel.text = str(level) # sets the text of the player level label to the passed in string 
+func update_level(curLevel):
+#	var test = ""
+#	test = str(level)
+#	print(test)
+#	playerLevelLabel.text = test # sets the text of the player level label to the passed in string 
+	playerLevelLabel.text = str(curLevel)
  
 # updates the health bar values to visualise how much hp is left
 func update_health(curHp, maxHp):
@@ -22,10 +29,12 @@ func update_health(curHp, maxHp):
 
  
 # updates the xp bar values to visualise how much xp is needed till the next level
-func update_experience (curXp, xpToNextLevel):
+func update_experience (curXp, xpToLevelUp):
 	# this calculation will always show the correct ratio no matter how high required and cur XP goes
-	experienceBar.value = (100 / xpToNextLevel) * curXp
+	ExpBar.max_value = xpToLevelUp
+	ExpBar.value = curXp
 
+ 
 
 func update_stamina(curStamina, maxStamina):
 	staminaBar.value = (100 / maxStamina) * curStamina
