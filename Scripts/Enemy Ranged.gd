@@ -1,21 +1,27 @@
 extends KinematicBody2D
 
 
-# Declare member variables here:
+# basic stats
 var curHp : int = 1
 var maxHp : int = 1
-
-var moveSpeed : int = 120
-var xpToGive : int = 30
+var moveSpeed : int = 60
+var xpToGive : int = 10
 var damage : int = 1
 var attackRate : float = 1.0
+# detection ranges
 var run_away_range : int = 150
 var attack_range : int = 450
 var chase_range : int = 600
 
+# smaller detection ranges so i can test to see if it wanders
+#var run_away_range : int = 150
+#var attack_range : int = 200
+#var chase_range : int = 250
+
 var moveDirection = 110
 var movingVel = Vector2()
 var facingDir = Vector2()
+var velocity = Vector2()
 
 var curAttackAnimation
 var arrow
@@ -23,7 +29,8 @@ var arrow
 onready var timer = $Timer
 onready var target = get_node("/root/MainScene/Player")
 onready var animatedSprite = $AnimatedSprite
-onready var arrow_scene = preload("res://Scenes/Arrow.tscn")
+onready var arrow_scene = preload("res://Scenes/Objects/Arrow.tscn")
+onready var random_position_generator = $"Random Position Generator"
 
 
 var state = MOVE
@@ -32,7 +39,8 @@ enum {
 	ATTACK,
 	BLOCK,
 	RUN_AWAY,
-	IDLE
+	IDLE,
+	WANDER
 }
 
 
@@ -54,12 +62,66 @@ func _physics_process (delta):
 			
 		IDLE:
 			idle()
-
+			
+		WANDER:
+			print("state is wander")
+			var direction = global_position.direction_to(random_position_generator.random_position)
+			velocity = velocity.move_toward(direction * moveSpeed, 210 * delta)
+			wander(direction)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	timer.wait_time = attackRate # set timer time to same as attack rate of the enemy
 	timer.start() # start the timer
+
+
+func randomize_states(list_of_states):
+	list_of_states.shuffle()
+	return list_of_states.pop_front()
+	
+
+
+func get_distance_to(target):
+	var distance_to_target = position.distance_to(target.position)
+	return distance_to_target
+
+
+func wander(a_vector : Vector2):
+	print("state is wander")
+	var target_position = random_position_generator.random_position # gets the player's position as a vector
+	moveDirection = rad2deg(get_angle_to(target_position)) # gets the angle from this current node to the target node in radians, and then converts it to degrees (godot works in 0 to 180 and 0 to -180, instead of 0 to 360, weird).
+	
+	if  get_distance_to(target) > attack_range and get_distance_to(target) < chase_range:
+		state = MOVE
+	if random_position_generator.get_time_left() == 0:
+		print("states randomized")
+		state = randomize_states([IDLE, WANDER])
+		random_position_generator.set_timer(rand_range(1, 3))
+		
+		
+	if a_vector.x > 0:
+		movingVel.x = 1
+		facingDir = Vector2(1, 0)
+			
+	if a_vector.x < 0:
+		movingVel.x = -1
+		facingDir = Vector2(-1, 0)
+
+	if a_vector.y < 0:
+		movingVel.y = -1
+		facingDir = Vector2(0, -1)
+
+	if a_vector.y > 1:
+		movingVel.y = 1
+		facingDir = Vector2(0, 1)
+	
+	if global_position.distance_to(random_position_generator.random_position) <= 5:
+		print("states randomized")
+		state = randomize_states([IDLE, WANDER])
+		random_position_generator.set_timer(rand_range(1, 3))
+		
+	move_and_slide(velocity)
+	manage_animations()
 
 
 # take an animation and play that animation.
@@ -167,7 +229,7 @@ func move():
 		facingDir = Vector2(1, 0)
 	# if target is out of enemy's chase radius then stop	
 	if distanceToTarget > chase_range:
-		stop_moving()
+		state = randomize_states([IDLE, WANDER])
 	
 	manage_animations()
 
@@ -304,7 +366,18 @@ func run_away():
 
 
 func idle():
-	stop_moving()
+	movingVel.x = 0
+	movingVel.y = 0
+	
+	# if target is outside attack range and inside chase range:
+	if  get_distance_to(target) > attack_range and get_distance_to(target) < chase_range:
+		state = MOVE
+	
+	if random_position_generator.get_time_left() == 0:
+		print("states randomized")
+		state = randomize_states([IDLE, WANDER])
+		random_position_generator.set_timer(rand_range(1, 3))
+		
 	manage_animations()
 
  

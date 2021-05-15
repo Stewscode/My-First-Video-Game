@@ -55,6 +55,8 @@ var state = MOVE
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	# initially randomizes the seed so that the "random" or "RNG" functions give a different result each time the game runs.
+	randomize()
 	#calculate_xp_needed_to_level_up()
 	#userInterface.initialise()
 	userInterface.update_level(curLevel) # calls the function which updates the player's level with it's current level from the UI node
@@ -137,9 +139,17 @@ func attack():
 			rayCast.get_collider().take_damage(damage) # calls the KinematicBody's take_damage() function, causing it to take damage, eg you dealing damage.
 			print("Dealt damage to a KinematicBody2D")
 			
+#			wait_for_animation()
+			rayCast.enabled = false
+
 	# call the function
 	manage_attack_animations()
-	
+
+#
+#func wait_for_animation():
+#	if animatedSprite.is_playing() == false:
+#		return
+		
 
 # function to manage the seperate attack animations
 func manage_attack_animations():
@@ -197,7 +207,8 @@ func move():
 		facingDir = Vector2(1, 0)
 	
 	# checks if the attack button is pressed and sets the state to ATTACK
-	if Input.is_action_pressed("ui_attack"):
+	if Input.is_action_just_pressed("ui_attack"):
+		rayCast.enabled = true
 		state = ATTACK
 		
 	if Input.is_action_pressed("ui_dodge"):
@@ -374,7 +385,7 @@ func this_is_the_player():
 func _on_FadingTrailEffectTimer_timeout():
 	if state == DODGE:
 		# copy of TrailEffect object
-		var TrailEffect = preload("res://Scenes/FadingTrailEffect.tscn").instance()
+		var TrailEffect = preload("res://Scenes/Player and Related/FadingTrailEffect.tscn").instance()
 		# add a child to the main game
 		get_parent().add_child(TrailEffect)
 		TrailEffect.position = position
