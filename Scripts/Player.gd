@@ -8,16 +8,19 @@ var curStamina : int = 100
 var maxStamina: int = 100
 var moveSpeed : int = 250
 var dodgeSpeed : int = 500
+var push_strength : int = 100
 var dodgeStaminaUse : int = 60
 var damage : int = 1
 var interactDist : int = 70
+var onehundred : int = 100
+var xpToLevelIncreaseRate : float = 1.2 # the rate at which your xp bar grows upon reaching a higher level.
+var hpIncreaseRate : float = 1.1
 
-var gold : int = 0 
+var gold : int = 0
 var curLevel : int = 1
 var curXp : int = 0
 var xpToLevelUp : int = 100
-var onehundred : int = 100
-var xpToLevelIncreaseRate : float = 1.2 # the rate at which your xp bar grows upon reaching a higher level.
+
 
  
 var vel = Vector2()
@@ -57,8 +60,7 @@ var state = MOVE
 func _ready():
 	# initially randomizes the seed so that the "random" or "RNG" functions give a different result each time the game runs.
 	randomize()
-	#calculate_xp_needed_to_level_up()
-	#userInterface.initialise()
+	load_stats()
 	userInterface.update_level(curLevel) # calls the function which updates the player's level with it's current level from the UI node
 	userInterface.update_health(curHp, maxHp)
 	userInterface.update_experience(curXp, xpToLevelUp)
@@ -68,29 +70,51 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process (delta):
-
+	update_stats()
+	# if colliding with something...
+	if get_slide_count() > 0:
+		check_if_box(vel)
+	
+	
 	# checks the "state" variable and sees whether it is currently equal to MOVE, ATTACK or DODGE.
 	# It then goes to whichever "state" it matches and carries out the code in there. 
 	match state: # similar to switch statements
 		MOVE:
-			#print("state = MOVE")
 			move()
 		
 		ATTACK:
-			#print("state = ATTACK")
 			attack()
 			
 		DODGE:
-			#print("state = DODGE")
 			dodge()
 		
 		BLOCK: # not yet implemented
 			pass
 
+func load_stats():
+	gold = PlayerStats.player_gold
+	curLevel = PlayerStats.player_level
+	curXp = PlayerStats.player_xp
+	xpToLevelUp = PlayerStats.xp_to_level_up
+
+
+func update_stats():
+	PlayerStats.player_gold = gold
+	PlayerStats.player_level = curLevel
+	PlayerStats.player_xp = curXp
+	PlayerStats.xp_to_level_up = xpToLevelUp
 
 func knockback_enemies():
 	pass
 
+func check_if_box(movement_vector):
+	#if the sum of vectors are greater than 1, then return. (it means it is trying to be pushed diagonally which I don't want)
+	if abs(movement_vector.y) + abs(movement_vector.x) > 1:
+		return
+	#get collisision at position 0 (first collision). "as Box" checks if it is of class Box and if it is not then it will return null
+	var box = get_slide_collision(0).collider as Box
+	if box != null:
+		box.push_box(push_strength * vel)
 
 func dodge():
 	if !facingDir.x == 1 && !facingDir.x == -1 && !facingDir.y == 1 && !facingDir.y == -1:
@@ -135,11 +159,10 @@ func attack():
 	rayCast.cast_to = facingDir * interactDist # Sets the ray's destination point
 	
 	if rayCast.is_colliding(): # if raycast is colliding with something
+		
 		if rayCast.get_collider() is KinematicBody2D: # returns the first object that the ray intersects, or null if no object is intersecting the ray, and if that object is a KinematicBody2D then do stuff:
+			print("raycast colliding with kinematic body 2d")
 			rayCast.get_collider().take_damage(damage) # calls the KinematicBody's take_damage() function, causing it to take damage, eg you dealing damage.
-			print("Dealt damage to a KinematicBody2D")
-			
-#			wait_for_animation()
 			rayCast.enabled = false
 
 	# call the function
@@ -270,38 +293,22 @@ func calculate_xp_needed_to_level_up():
 func give_xp (amount):
 	curXp += amount # adds "amount" to the current xp pool.
 	userInterface.update_experience(curXp, xpToLevelUp) # update experience bar
-	print("current xp = ", curXp)
-	print("xp to next level: ", xpToLevelUp)
 	
 	if curXp >= xpToLevelUp: # checks if the current xp pool is greater or equal to the amount needed to level up.
 		level_up() # if current xp is enough to level up then go to level_up().
 		userInterface.update_experience(curXp, xpToLevelUp) # update experience bar
-		
+
 
 # function to handle leveling once the current xp has met the conditions to level up
 func level_up ():
+	maxHp *= hpIncreaseRate
+	curHp = maxHp
+	userInterface.update_health(curHp, maxHp)
 	
 	var overflowXp = curXp - xpToLevelUp # variable to store the xp which has overflowed
-	
 	xpToLevelUp *= xpToLevelIncreaseRate
 	curXp = overflowXp
 	curLevel += 1 # adds 1 to the current level to show progress, eg level 1 then 2 then 3 etc.
-#	if overflowXp > 0: 
-#		curXp = 0
-#		curXp += overflowXp
-#		overflowXp = 0
-#		xpToLevelUp *= xpToLevelIncreaseRate # multiplies the xp required for the next level by a fixed rate
-#		userInterface.update_experience(curXp, xpToLevelUp) # update experience bar
-#		print("xp to next level: ", xpToLevelUp)
-#	else:
-#		curXp = 0 + overflowXp # sets currrent xp to the amount overflowed (if any).
-#		overflowXp = 0
-#		xpToLevelUp *= xpToLevelIncreaseRate # multiplies the xp required for the next level by a fixed rate
-#		userInterface.update_experience(curXp, xpToLevelUp) # update experience bar
-#		print("xp to next level: ", xpToLevelUp)
-	
-	print("current level = ", curLevel)
-	
 	userInterface.update_level(curLevel) # update player level 
 
 
@@ -398,6 +405,7 @@ func _on_FadingTrailEffectTimer_timeout():
 		TrailEffect.flip_h = $AnimatedSprite.flip_h
 
 
-func _on_Hitbox_body_entered(body):
-	if body.has_method("this_is_an_arrow"):
-		print("player hit by an arrow")
+func _on_Pick_Up_Items_area_entered(area):
+	if area.is_in_group("Key"):
+		singleton_script.key_obtained = true
+		area.get_parent().queue_free()

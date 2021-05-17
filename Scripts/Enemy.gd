@@ -5,13 +5,13 @@ extends KinematicBody2D
 var curHp : int = 2
 var maxHp : int = 2
  
-var moveSpeed : int = 150
-var xpToGive : int = 10
+var moveSpeed : int = 200
+var xpToGive : int = 30
  
 var damage : int = 1
-var attackRate : float = 1.0
+var attackRate : float = 1.5
 var attack_range : int = 80
-var chase_range : int = 200
+var chase_range : int = 250
 
 var moveDirection = 110
 var velocity = Vector2()
@@ -102,8 +102,8 @@ func wander(a_vector : Vector2):
 # function which allows an enemy to take damage
 # pass in amount of damage to be taken
 func take_damage (dmgToTake): 
+	print("damage taken")
 	curHp -= dmgToTake # takes away damage taken from hp pool
-	print(dmgToTake, " damage taken. ", curHp, "HP left.")
 	if curHp <= 0: # if the enemy's hp drops to 0 then it will "die".
 		die() # call die() function
  
@@ -141,7 +141,6 @@ func move():
 	
 	var player = target.position # gets the player's position as a vector
 	moveDirection = rad2deg(get_angle_to(player)) # gets the angle from this current node to the player node in radians and convert it to degrees (godot work in 0 to 180 and 0 to -180, instead of 0 to 360, weird).
-	#print(moveDirection) # print the angle between the player and the current node for testing puposes
 	
 	if moveDirection > -135 and moveDirection < -45:
 		movingVel.y = -1

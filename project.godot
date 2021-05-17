@@ -8,16 +8,26 @@
 
 config_version=4
 
-_global_script_classes=[  ]
+_global_script_classes=[ {
+"base": "KinematicBody2D",
+"class": "Box",
+"language": "GDScript",
+"path": "res://Scripts/Box.gd"
+} ]
 _global_script_class_icons={
-
+"Box": ""
 }
 
 [application]
 
 config/name="RPG"
-run/main_scene="res://Scenes/Title Screen and Related/Title Screen.tscn"
+run/main_scene="res://Scenes/Levels/Level 2.tscn"
 config/icon="res://icon.png"
+
+[autoload]
+
+singleton_script="*res://Scripts/Singleton Scripts/singleton_script.gd"
+PlayerStats="*res://Scripts/Singleton Scripts/Player Stats.gd"
 
 [display]
 
