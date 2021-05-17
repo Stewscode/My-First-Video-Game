@@ -2,14 +2,14 @@ extends KinematicBody2D
 
 
 # Declare member variables here:
-var curHp : int = 25
-var maxHp : int = 25
+var curHp : int = 20
+var maxHp : int = 20
  
 var moveSpeed : int = 150
 var xpToGive : int = 10
  
 var damage : int = 1
-var melee_attack_damage = 1
+var melee_attack_damage = 3
 var attackRate : float = 1.0
 var attack_range : int = 0
 var chase_range : int = 1000

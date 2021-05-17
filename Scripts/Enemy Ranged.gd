@@ -4,8 +4,8 @@ extends KinematicBody2D
 # basic stats
 var curHp : int = 1
 var maxHp : int = 1
-var moveSpeed : int = 60
-var xpToGive : int = 10
+var moveSpeed : int = 80
+var xpToGive : int = 20
 var damage : int = 1
 var attackRate : float = 1.0
 # detection ranges
@@ -64,7 +64,6 @@ func _physics_process (delta):
 			idle()
 			
 		WANDER:
-			print("state is wander")
 			var direction = global_position.direction_to(random_position_generator.random_position)
 			velocity = velocity.move_toward(direction * moveSpeed, 210 * delta)
 			wander(direction)
@@ -87,14 +86,12 @@ func get_distance_to(target):
 
 
 func wander(a_vector : Vector2):
-	print("state is wander")
 	var target_position = random_position_generator.random_position # gets the player's position as a vector
 	moveDirection = rad2deg(get_angle_to(target_position)) # gets the angle from this current node to the target node in radians, and then converts it to degrees (godot works in 0 to 180 and 0 to -180, instead of 0 to 360, weird).
 	
 	if  get_distance_to(target) > attack_range and get_distance_to(target) < chase_range:
 		state = MOVE
 	if random_position_generator.get_time_left() == 0:
-		print("states randomized")
 		state = randomize_states([IDLE, WANDER])
 		random_position_generator.set_timer(rand_range(1, 3))
 		
@@ -116,7 +113,6 @@ func wander(a_vector : Vector2):
 		facingDir = Vector2(0, 1)
 	
 	if global_position.distance_to(random_position_generator.random_position) <= 5:
-		print("states randomized")
 		state = randomize_states([IDLE, WANDER])
 		random_position_generator.set_timer(rand_range(1, 3))
 		
@@ -185,7 +181,6 @@ func manage_animations ():
 # function which allows an enemy to take damage
 # pass in amount of damage to be taken
 func take_damage (dmgToTake): 
-	print("'Ranged Enemy' takes ", dmgToTake, " damage")
 	curHp -= dmgToTake # takes away damage taken from hp pool
 	if curHp <= 0: # if the enemy's hp drops to 0 then it will "die".
 		die() # call die() function
@@ -213,7 +208,6 @@ func move():
 	
 	var player = target.position # gets the player's position as a vector
 	moveDirection = rad2deg(get_angle_to(player)) # gets the angle from this current node to the player node in radians and convert it to degrees (godot work in 0 to 180 and 0 to -180, instead of 0 to 360, weird).
-	#print(moveDirection) # print the angle between the player and the current node for testing puposes
 	
 	if moveDirection > -135 and moveDirection < -45:
 		movingVel.y = -1
@@ -243,7 +237,6 @@ func testmove():
 	
 	var player = target.position # gets the player's position as a vector
 	moveDirection = rad2deg(get_angle_to(player)) # gets the angle from this current node to the player node in radians and convert it to degrees (godot work in 0 to 180 and 0 to -180, instead of 0 to 360, weird).
-	#print(moveDirection) # print the angle between the player and the current node for testing puposes
 	
 	# if facing up
 	if moveDirection > -135 and moveDirection < -45:
@@ -374,7 +367,6 @@ func idle():
 		state = MOVE
 	
 	if random_position_generator.get_time_left() == 0:
-		print("states randomized")
 		state = randomize_states([IDLE, WANDER])
 		random_position_generator.set_timer(rand_range(1, 3))
 		
