@@ -187,6 +187,7 @@ func take_damage (dmgToTake):
  
 # function to let enemy do things once it loses all its HP, eg die.
 func die ():
+	Highscore.add_to_score()
 	target.give_xp(xpToGive) # function to give XP to player .
 	queue_free() # deletes the node - making it disappear and essentially die.
 

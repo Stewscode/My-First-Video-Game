@@ -10,6 +10,10 @@ onready var staminaBar : TextureProgress = get_node("Background/StaminaBar")
 onready var playerGoldLabel : Label = get_node("Background/PlayerGoldLabel")
 onready var playerLevelLabel : Label = get_node("Background/PlayerLevelLabel")
 onready var ExpBar : ProgressBar = get_node("Background/ExpBar")
+onready var score_label : Label = get_node("Background/ScoreLabel")
+
+func _process(delta):
+	update_score()
 
 func intitialise(): 
 	playerLevelLabel.text = ""
@@ -43,5 +47,10 @@ func update_stamina(curStamina, maxStamina):
 # updates the player gold label to show current gold
 func update_gold (gold):
 	playerGoldLabel.text = "Gold: " + str(gold)
+
+
+func update_score():
+	score_label.text = "Score: " + str(Highscore.score)
+	
 
 

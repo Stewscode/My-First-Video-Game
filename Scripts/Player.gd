@@ -10,7 +10,7 @@ var moveSpeed : int = 250
 var dodgeSpeed : int = 500
 var push_strength : int = 100
 var dodgeStaminaUse : int = 60
-var damage : int = 1
+var damage : int = 5
 var interactDist : int = 70
 var onehundred : int = 100
 var xpToLevelIncreaseRate : float = 1.2 # the rate at which your xp bar grows upon reaching a higher level.
@@ -301,6 +301,8 @@ func give_xp (amount):
 
 # function to handle leveling once the current xp has met the conditions to level up
 func level_up ():
+	Highscore.add_to_score()
+	
 	maxHp *= hpIncreaseRate
 	curHp = maxHp
 	userInterface.update_health(curHp, maxHp)

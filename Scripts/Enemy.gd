@@ -101,14 +101,15 @@ func wander(a_vector : Vector2):
 
 # function which allows an enemy to take damage
 # pass in amount of damage to be taken
-func take_damage (dmgToTake): 
+func take_damage(dmgToTake): 
 	print("damage taken")
 	curHp -= dmgToTake # takes away damage taken from hp pool
 	if curHp <= 0: # if the enemy's hp drops to 0 then it will "die".
 		die() # call die() function
  
 # function to let enemy do things once it loses all its HP, eg die.
-func die ():
+func die():
+	Highscore.add_to_score()
 	target.give_xp(xpToGive) # function to give XP to player .
 	queue_free() # deletes the node - making it disappear and essentially die.
 
