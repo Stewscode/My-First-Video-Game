@@ -26,11 +26,9 @@ func _on_VisibilityNotifier2D_screen_exited():
 	pass
 
 
-
-func _on_Arrow__body_entered(body):
+func _on_Fireball_body_entered(body):
 	if body.name == "Player":
 		if body.has_method("take_damage"):
 			body.take_damage(damage)
 			print("body has taken ", damage, " damage")
 			queue_free()
-
