@@ -47,9 +47,6 @@ func _physics_process (delta):
 		ATTACK:
 			attack()
 		
-		BLOCK: # not yet implemented
-			pass
-		
 		IDLE:
 			idle()
 			

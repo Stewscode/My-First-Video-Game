@@ -10,7 +10,7 @@ var moveSpeed : int = 250
 var dodgeSpeed : int = 500
 var push_strength : int = 100
 var dodgeStaminaUse : int = 60
-var damage : int = 5
+var damage : int = 1
 var interactDist : int = 70
 var onehundred : int = 100
 var xpToLevelIncreaseRate : float = 1.2 # the rate at which your xp bar grows upon reaching a higher level.
@@ -258,12 +258,14 @@ func _process (delta):
 
 # function check if any interactions are able to take place
 func interact ():
+	rayCast.enabled = true
 	rayCast.cast_to = facingDir * interactDist # Sets the ray's destination point, 
 											   # relative to the RayCast's position
 	# checks if the raycast is colliding with anything and gets the object (and its methods) it is colliding with and does something with it:
 	if rayCast.is_colliding():
 		if rayCast.get_collider().has_method("on_interact"): # if not a KinematicBody then check if the object collided with has a method called "on_interact"
 			rayCast.get_collider().on_interact(self) # returns the object that is collided with and calls its "on_interact" function on itself as a parameter.
+			rayCast.enabled = false
 
 
 # function to allow the player to take damage

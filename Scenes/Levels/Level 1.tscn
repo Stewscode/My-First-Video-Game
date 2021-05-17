@@ -611,7 +611,7 @@ current = true
 position = Vector2( 258.645, 3724.4 )
 
 [node name="Key" parent="." instance=ExtResource( 4 )]
-position = Vector2( 2587.92, 6823.27 )
+position = Vector2( 3729.58, 1545.79 )
 
 [node name="Box" parent="." instance=ExtResource( 9 )]
 position = Vector2( 775.567, -11.174 )

@@ -2,11 +2,11 @@ extends KinematicBody2D
 
 
 # Declare member variables here:
-var curHp : int = 20
-var maxHp : int = 20
+var curHp : int = 9
+var maxHp : int = 9
  
 var moveSpeed : int = 150
-var xpToGive : int = 10
+var xpToGive : int = 1000
  
 var damage : int = 1
 var melee_attack_damage = 3
@@ -183,13 +183,13 @@ func initialise_phase_2():
 
 
 func switch_to_phase_2():
-	if curHp <= 10:
+	if curHp <= 5:
 		phase_1 = false
 		phase_2 = true
 		initialise_phase_2()
 
 func manage_boss():
-	if curHp > 10:
+	if curHp > 5:
 		phase_1 = true
 		phase_2 = false
 		check_if_melee_state()
