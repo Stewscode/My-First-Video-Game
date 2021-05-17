@@ -4,9 +4,8 @@
 [ext_resource path="res://Scripts/UI.gd" type="Script" id=2]
 
 [node name="UI" type="Control"]
-margin_left = -5.0
-margin_right = 308.0
-margin_bottom = 80.0
+anchor_right = 1.0
+anchor_bottom = 1.0
 script = ExtResource( 2 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -14,10 +13,10 @@ __meta__ = {
 
 [node name="Background" type="TextureRect" parent="."]
 self_modulate = Color( 0, 0, 0, 0.415686 )
-margin_left = 44.0
-margin_top = 8.0
-margin_right = 304.0
-margin_bottom = 83.0
+margin_left = 28.699
+margin_top = 23.3597
+margin_right = 288.699
+margin_bottom = 98.3597
 texture = ExtResource( 1 )
 expand = true
 __meta__ = {
@@ -115,3 +114,10 @@ custom_colors/font_color_shadow = Color( 1, 0.980392, 0.980392, 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="ScoreLabel" type="Label" parent="Background"]
+margin_left = 7.30096
+margin_top = 96.6403
+margin_right = 145.301
+margin_bottom = 153.64
+text = "Score : 100000"
